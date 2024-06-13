@@ -29,6 +29,20 @@ export default function () {
   const editor = useEditor()
   const inputFileRef = React.useRef<HTMLInputElement>(null)
 
+  const htmlTemplate = `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>HTML Canva FabricJs - POC</title>
+  </head>
+  <body>
+    CANVAS_LOAD_FROM_SVG_STR
+  </body>
+  </html>
+  `
+
   const parseGraphicJSON = () => {
     const currentScene = editor.scene.exportToJSON()
 
@@ -127,10 +141,19 @@ export default function () {
         metadata: {},
         preview: "",
       }
-      makeDownload(videoTemplate)
+      makeDownloadHtml(editor.canvas.canvas.toSVG())
     } else {
       console.log("NO CURRENT DESIGN")
     }
+  }
+
+  const makeDownloadHtml = (svgString: string) => {
+    const html = htmlTemplate.replace('CANVAS_LOAD_FROM_SVG_STR', svgString)
+    const dataStr = "data:text/html;charset=utf-8," + encodeURIComponent(html)
+    const a = document.createElement("a")
+    a.href = dataStr
+    a.download = `template-${new Date().getTime()}.html`
+    a.click()
   }
 
   const makeDownload = (data: Object) => {
