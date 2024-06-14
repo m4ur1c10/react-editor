@@ -19,7 +19,7 @@ const Container = styled<"div", {}, Theme>("div", ({ $theme }) => ({
   background: $theme.colors.black,
   display: "grid",
   padding: "0 1.25rem",
-  gridTemplateColumns: "240px 1fr 240px",
+  gridTemplateColumns: "500px 1fr 500px",
   alignItems: "center",
 }))
 
@@ -38,7 +38,7 @@ export default function () {
       <title>HTML Canva FabricJs - POC</title>
   </head>
   <body>
-    CANVAS_LOAD_FROM_SVG_STR
+    CANVAS_LOAD_FROM_STR
   </body>
   </html>
   `
@@ -141,14 +141,37 @@ export default function () {
         metadata: {},
         preview: "",
       }
-      makeDownloadHtml(editor.canvas.canvas.toSVG())
+      makeDownload(videoTemplate)
     } else {
       console.log("NO CURRENT DESIGN")
     }
   }
 
-  const makeDownloadHtml = (svgString: string) => {
-    const html = htmlTemplate.replace('CANVAS_LOAD_FROM_SVG_STR', svgString)
+  const makeDownloadSvg = () => {
+    const svgString = editor.canvas.canvas.toSVG()
+    makeDownloadHtml(svgString)
+  }
+
+  const makeDownloadJson = () => {
+    const htmlJsonString = JSON.stringify(editor.canvas.canvas.toDatalessJSON())
+    const htmlScript = `
+    <script src="https://cdn.jsdelivr.net/npm/fabric"></script>
+    <script>
+        var canvasElement = document.createElement('canvas');
+        canvasElement.width = '300';
+        canvasElement.height = '300';
+        canvasElement.id = 'canvas';
+        document.body.appendChild(canvasElement);
+        var canvas = new fabric.Canvas('canvas');
+
+        canvas.loadFromJSON('${htmlJsonString}');
+    </script>
+    `
+    makeDownloadHtml(htmlScript)
+  }
+
+  const makeDownloadHtml = (anyContent: string) => {
+    const html = htmlTemplate.replace('CANVAS_LOAD_FROM_STR', anyContent)
     const dataStr = "data:text/html;charset=utf-8," + encodeURIComponent(html)
     const a = document.createElement("a")
     a.href = dataStr
@@ -311,7 +334,34 @@ export default function () {
           >
             Import
           </Button>
-
+          <Button
+            size="compact"
+            onClick={makeDownloadJson}
+            kind={KIND.tertiary}
+            overrides={{
+              StartEnhancer: {
+                style: {
+                  marginRight: "4px",
+                },
+              },
+            }}
+          >
+            Export as JSON
+          </Button>
+          <Button
+            size="compact"
+            onClick={makeDownloadSvg}
+            kind={KIND.tertiary}
+            overrides={{
+              StartEnhancer: {
+                style: {
+                  marginRight: "4px",
+                },
+              },
+            }}
+          >
+            Export as SVG
+          </Button>
           <Button
             size="compact"
             onClick={makeDownloadTemplate}
